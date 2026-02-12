@@ -72,16 +72,20 @@ jobs:
             add_latest="false"
             if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               add_latest="true"
-              add_major="true"
               major="${BASH_REMATCH[1]}"
+              if (( major >= 1 )); then
+                add_major="true"
+              fi
             fi
           else
             version="${{ github.event.inputs.version }}"
             version="${version#v}"
             add_latest="${{ github.event.inputs.push_latest }}"
             if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              add_major="true"
               major="${BASH_REMATCH[1]}"
+              if (( major >= 1 )); then
+                add_major="true"
+              fi
             fi
           fi
 
@@ -129,19 +133,25 @@ jobs:
 
       - name: Update Docker Hub Overview
         id: update_nextjs_overview
+        if: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN != '' }}
         continue-on-error: true
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN }}
           repository: ${{ env.NEXTJS_IMAGE }}
           short-description: Next.js Vercel AI SDK chat Docker image for GonkaGate OpenAI-compatible API.
           readme-filepath: ./dockerhub/nextjs-vercel-ai-sdk-chat.md
 
       - name: Warn if Docker Hub overview update failed
-        if: steps.update_nextjs_overview.outcome == 'failure'
+        if: secrets.DOCKERHUB_DESCRIPTION_TOKEN != '' && steps.update_nextjs_overview.outcome == 'failure'
         run: |
           echo "::warning::Docker Hub overview update failed for ${{ env.NEXTJS_IMAGE }}. Image publish step already completed."
+
+      - name: Skip Docker Hub overview update (token not configured)
+        if: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN == '' }}
+        run: |
+          echo "::notice::Skipping Docker Hub overview update for ${{ env.NEXTJS_IMAGE }} because DOCKERHUB_DESCRIPTION_TOKEN is not configured."
 
   publish-cli:
     name: Publish CLI Image
@@ -179,16 +189,20 @@ jobs:
             add_latest="false"
             if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               add_latest="true"
-              add_major="true"
               major="${BASH_REMATCH[1]}"
+              if (( major >= 1 )); then
+                add_major="true"
+              fi
             fi
           else
             version="${{ github.event.inputs.version }}"
             version="${version#v}"
             add_latest="${{ github.event.inputs.push_latest }}"
             if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              add_major="true"
               major="${BASH_REMATCH[1]}"
+              if (( major >= 1 )); then
+                add_major="true"
+              fi
             fi
           fi
 
@@ -236,16 +250,22 @@ jobs:
 
       - name: Update Docker Hub Overview
         id: update_cli_overview
+        if: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN != '' }}
         continue-on-error: true
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN }}
           repository: ${{ env.CLI_IMAGE }}
           short-description: Go chat CLI Docker image for GonkaGate OpenAI-compatible API with streaming.
           readme-filepath: ./dockerhub/gonkagate-chat-cli.md
 
       - name: Warn if Docker Hub overview update failed
-        if: steps.update_cli_overview.outcome == 'failure'
+        if: secrets.DOCKERHUB_DESCRIPTION_TOKEN != '' && steps.update_cli_overview.outcome == 'failure'
         run: |
           echo "::warning::Docker Hub overview update failed for ${{ env.CLI_IMAGE }}. Image publish step already completed."
+
+      - name: Skip Docker Hub overview update (token not configured)
+        if: ${{ secrets.DOCKERHUB_DESCRIPTION_TOKEN == '' }}
+        run: |
+          echo "::notice::Skipping Docker Hub overview update for ${{ env.CLI_IMAGE }} because DOCKERHUB_DESCRIPTION_TOKEN is not configured."

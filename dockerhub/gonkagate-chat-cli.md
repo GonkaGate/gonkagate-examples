@@ -32,7 +32,7 @@ docker run --rm \
 
 - `latest`
 - `<semver>` (for example `0.1.0`)
-- `<major>` (for example `0`, `1`, `2`)
+- `<major>` (for example `1`, `2`; published for major versions `>= 1`)
 
 ## Key Environment Variables
 
