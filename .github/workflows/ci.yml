@@ -20,6 +20,7 @@ jobs:
 
           fail_count=0
           allowed_sdk_langs=(csharp curl go java node python)
+          non_runnable_example_dirs=(dockerhub)
 
           fail() {
             echo "::error::$1"
@@ -34,6 +35,16 @@ jobs:
             local lang="$1"
             for allowed in "${allowed_sdk_langs[@]}"; do
               if [[ "$allowed" == "$lang" ]]; then
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          is_non_runnable_example_dir() {
+            local dir="$1"
+            for excluded in "${non_runnable_example_dirs[@]}"; do
+              if [[ "$excluded" == "$dir" ]]; then
                 return 0
               fi
             done
@@ -69,6 +80,11 @@ jobs:
           for top_example_dir in examples/*; do
             [[ -d "$top_example_dir" ]] || continue
             top_name="$(basename "$top_example_dir")"
+
+            if is_non_runnable_example_dir "$top_name"; then
+              echo "Skipping non-runnable examples directory: $top_example_dir"
+              continue
+            fi
 
             if [[ "$top_name" == "agents" ]]; then
               for agent_example_dir in "$top_example_dir"/*; do
