@@ -28,6 +28,9 @@ Current production-style example directories:
 - `examples/agents/langchain-streaming-agent`
 - `examples/agents/langchain-structured-output-agent`
 
+Support (non-runnable) docs directory under `examples/`:
+- `examples/dockerhub` (Docker Hub overview/release docs; not an executable example)
+
 Root documentation and policy files:
 - `README.md`
 - `AGENTS.md`
@@ -42,6 +45,13 @@ Each example directory must include at minimum:
 - `README.md` (what it does, setup, run, expected output)
 - `.env.example` (required variables, no secrets)
 - Source files needed to run independently
+
+Exception:
+- `examples/dockerhub` is documentation-only and is excluded from runnable-example contract checks.
+- If you add another non-runnable subdirectory under `examples/`, update:
+  - `.github/workflows/ci.yml` (`non_runnable_example_dirs`)
+  - `.github/workflows/docker-auto-tag.yml` (`paths-ignore`, if needed)
+  - `.github/scripts/auto-tag.sh` target paths/excludes (if release tagging should ignore it)
 
 ## Build, Test, and Development Commands
 There is no single root build/test pipeline yet. Work from the specific example directory and follow its README.
