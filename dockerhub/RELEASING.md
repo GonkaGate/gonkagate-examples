@@ -12,6 +12,7 @@ This repository supports automatic Docker image tagging and publishing for:
 3. In GitHub repository settings, add Actions secrets:
    - `DOCKERHUB_USERNAME`
    - `DOCKERHUB_TOKEN`
+   - `DOCKERHUB_DESCRIPTION_TOKEN` (optional; only for Docker Hub "Repository overview" updates)
    - `TAG_PUSH_TOKEN` (optional; only needed if you want tag-push to be done by PAT)
 
 Never commit the token into the repository.
@@ -51,8 +52,12 @@ Workflow: `.github/workflows/docker-publish.yml`
 When `nextjs-vX.Y.Z` or `cli-vX.Y.Z` is pushed, Docker images are published with:
 
 - exact `X.Y.Z`
-- floating major `X`
+- floating major `X` (only for `X >= 1`)
 - `latest` (only for stable `X.Y.Z` versions)
+
+Docker Hub overview behavior:
+- if `DOCKERHUB_DESCRIPTION_TOKEN` is set, workflow updates Docker Hub README/overview from `dockerhub/*.md`;
+- if `DOCKERHUB_DESCRIPTION_TOKEN` is missing, publish continues and overview update is skipped.
 
 ## 5. Manual Dry Run
 
