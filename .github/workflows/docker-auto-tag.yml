@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: docker-auto-tag-${{ github.ref }}
@@ -40,8 +41,85 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Configure push authentication
+        id: push_auth
+        env:
+          TAG_PUSH_TOKEN: ${{ secrets.TAG_PUSH_TOKEN }}
+        run: |
+          if [[ -n "${TAG_PUSH_TOKEN}" ]]; then
+            git remote set-url origin "https://x-access-token:${TAG_PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+            echo "Using TAG_PUSH_TOKEN for pushing tags."
+            echo "use_pat=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::TAG_PUSH_TOKEN is not set. Falling back to GITHUB_TOKEN; workflow will dispatch docker-publish manually for new tags."
+            echo "use_pat=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Snapshot release tags before auto-tag
+        run: |
+          git tag -l "nextjs-v*" "cli-v*" | sort -V > /tmp/release-tags-before.txt
+
       - name: Create and push tags
         env:
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
           BASELINE_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.baseline_version || '0.1.0' }}
         run: bash .github/scripts/auto-tag.sh
+
+      - name: Snapshot release tags after auto-tag
+        run: |
+          git tag -l "nextjs-v*" "cli-v*" | sort -V > /tmp/release-tags-after.txt
+
+      - name: Dispatch docker-publish for new tags (GITHUB_TOKEN fallback)
+        if: steps.push_auth.outputs.use_pat != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN_EFFECTIVE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${DRY_RUN_EFFECTIVE}" == "true" ]]; then
+            echo "Dry run enabled; skip docker-publish dispatch."
+            exit 0
+          fi
+
+          mapfile -t new_tags < <(comm -13 /tmp/release-tags-before.txt /tmp/release-tags-after.txt)
+
+          if [[ "${#new_tags[@]}" -eq 0 ]]; then
+            echo "No new release tags created; nothing to dispatch."
+            exit 0
+          fi
+
+          for tag in "${new_tags[@]}"; do
+            target=""
+            version=""
+            push_latest="false"
+
+            case "${tag}" in
+              nextjs-v*)
+                target="nextjs"
+                version="${tag#nextjs-v}"
+                ;;
+              cli-v*)
+                target="cli"
+                version="${tag#cli-v}"
+                ;;
+              *)
+                echo "Skipping unsupported tag: ${tag}"
+                continue
+                ;;
+            esac
+
+            if [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              push_latest="true"
+            fi
+
+            echo "Dispatch docker-publish for tag=${tag}, target=${target}, version=${version}, push_latest=${push_latest}"
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/actions/workflows/docker-publish.yml/dispatches" \
+              -f ref=main \
+              -f "inputs[target]=${target}" \
+              -f "inputs[version]=${version}" \
+              -f "inputs[push_latest]=${push_latest}"
+          done

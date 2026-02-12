@@ -12,6 +12,7 @@ This repository supports automatic Docker image tagging and publishing for:
 3. In GitHub repository settings, add Actions secrets:
    - `DOCKERHUB_USERNAME`
    - `DOCKERHUB_TOKEN`
+   - `TAG_PUSH_TOKEN` (optional; only needed if you want tag-push to be done by PAT)
 
 Never commit the token into the repository.
 
@@ -30,6 +31,10 @@ On every push to `main`, the workflow inspects changes and creates tags:
 
 - `nextjs-vX.Y.Z` for Next.js example changes
 - `cli-vX.Y.Z` for CLI example changes
+
+Important:
+- If `TAG_PUSH_TOKEN` is set, tags are pushed with that PAT.
+- If `TAG_PUSH_TOKEN` is missing, workflow falls back to `GITHUB_TOKEN` and explicitly dispatches `.github/workflows/docker-publish.yml` for newly created tags.
 
 Version bump logic (Conventional Commits):
 
