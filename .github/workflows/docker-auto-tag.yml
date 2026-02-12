@@ -1,0 +1,47 @@
+name: Docker Auto Tag
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Calculate tags without creating them"
+        required: true
+        default: true
+        type: boolean
+      baseline_version:
+        description: "Initial version when no tags exist (semver)"
+        required: true
+        default: "0.1.0"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docker-auto-tag-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Create release tags
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tags
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}
+          BASELINE_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.baseline_version || '0.1.0' }}
+        run: bash .github/scripts/auto-tag.sh

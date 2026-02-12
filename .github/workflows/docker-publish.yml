@@ -1,0 +1,261 @@
+name: Docker Publish
+
+on:
+  push:
+    tags:
+      - "nextjs-v*"
+      - "cli-v*"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Image target to publish"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - both
+          - nextjs
+          - cli
+      version:
+        description: "Version tag to publish (for example 0.1.0)"
+        required: true
+        type: string
+      push_latest:
+        description: "Also publish the latest tag"
+        required: true
+        default: true
+        type: boolean
+
+env:
+  NEXTJS_IMAGE: gonkagate/nextjs-vercel-ai-sdk-chat
+  CLI_IMAGE: gonkagate/gonkagate-chat-cli
+
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+
+jobs:
+  publish-nextjs:
+    name: Publish Next.js Image
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref_name, 'nextjs-v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'nextjs' || github.event.inputs.target == 'both'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Hub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Resolve version and latest policy
+        id: prep
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          major=""
+          add_major="false"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            version="${GITHUB_REF_NAME#nextjs-v}"
+            add_latest="false"
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              add_latest="true"
+              add_major="true"
+              major="${BASH_REMATCH[1]}"
+            fi
+          else
+            version="${{ github.event.inputs.version }}"
+            version="${version#v}"
+            add_latest="${{ github.event.inputs.push_latest }}"
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              add_major="true"
+              major="${BASH_REMATCH[1]}"
+            fi
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "add_latest=${add_latest}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          echo "add_major=${add_major}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.NEXTJS_IMAGE }}
+          tags: |
+            type=raw,value=${{ steps.prep.outputs.version }}
+            type=raw,value=latest,enable=${{ steps.prep.outputs.add_latest == 'true' }}
+            type=raw,value=${{ steps.prep.outputs.major }},enable=${{ steps.prep.outputs.add_major == 'true' }}
+          labels: |
+            org.opencontainers.image.title=GonkaGate Next.js Vercel AI SDK Chat
+            org.opencontainers.image.description=Next.js + Vercel AI SDK chat example for GonkaGate OpenAI-compatible API.
+            org.opencontainers.image.url=https://gonkagate.com/en/gonka-api
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and Push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./examples/nextjs-vercel-ai-sdk-chat
+          file: ./examples/nextjs-vercel-ai-sdk-chat/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate GitHub Build Attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: index.docker.io/${{ env.NEXTJS_IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Keyless Sign Image Digest
+        run: cosign sign --yes "${{ env.NEXTJS_IMAGE }}@${{ steps.build.outputs.digest }}"
+
+      - name: Verify Signature Identity
+        run: |
+          cosign verify "${{ env.NEXTJS_IMAGE }}@${{ steps.build.outputs.digest }}" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/docker-publish.yml@${{ github.ref }}"
+
+      - name: Update Docker Hub Overview
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.NEXTJS_IMAGE }}
+          short-description: Next.js Vercel AI SDK chat Docker image for GonkaGate OpenAI-compatible API.
+          readme-filepath: ./dockerhub/nextjs-vercel-ai-sdk-chat.md
+
+  publish-cli:
+    name: Publish CLI Image
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref_name, 'cli-v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.target == 'cli' || github.event.inputs.target == 'both'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Hub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Resolve version and latest policy
+        id: prep
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          major=""
+          add_major="false"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            version="${GITHUB_REF_NAME#cli-v}"
+            add_latest="false"
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              add_latest="true"
+              add_major="true"
+              major="${BASH_REMATCH[1]}"
+            fi
+          else
+            version="${{ github.event.inputs.version }}"
+            version="${version#v}"
+            add_latest="${{ github.event.inputs.push_latest }}"
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              add_major="true"
+              major="${BASH_REMATCH[1]}"
+            fi
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "add_latest=${add_latest}" >> "$GITHUB_OUTPUT"
+          echo "major=${major}" >> "$GITHUB_OUTPUT"
+          echo "add_major=${add_major}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.CLI_IMAGE }}
+          tags: |
+            type=raw,value=${{ steps.prep.outputs.version }}
+            type=raw,value=latest,enable=${{ steps.prep.outputs.add_latest == 'true' }}
+            type=raw,value=${{ steps.prep.outputs.major }},enable=${{ steps.prep.outputs.add_major == 'true' }}
+          labels: |
+            org.opencontainers.image.title=GonkaGate Chat CLI
+            org.opencontainers.image.description=Go-based interactive CLI chat example for GonkaGate OpenAI-compatible API.
+            org.opencontainers.image.url=https://gonkagate.com/en/gonka-api
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and Push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./examples/gonkagate-chat-cli
+          file: ./examples/gonkagate-chat-cli/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate GitHub Build Attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: index.docker.io/${{ env.CLI_IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Keyless Sign Image Digest
+        run: cosign sign --yes "${{ env.CLI_IMAGE }}@${{ steps.build.outputs.digest }}"
+
+      - name: Verify Signature Identity
+        run: |
+          cosign verify "${{ env.CLI_IMAGE }}@${{ steps.build.outputs.digest }}" \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/docker-publish.yml@${{ github.ref }}"
+
+      - name: Update Docker Hub Overview
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ env.CLI_IMAGE }}
+          short-description: Go chat CLI Docker image for GonkaGate OpenAI-compatible API with streaming.
+          readme-filepath: ./dockerhub/gonkagate-chat-cli.md

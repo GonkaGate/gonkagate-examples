@@ -1,0 +1,7 @@
+.env*
+!.env.example
+gonkagate-chat
+gonkagate-chat.exe
+.git
+.gitignore
+.DS_Store
