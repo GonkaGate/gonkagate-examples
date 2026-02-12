@@ -14,6 +14,7 @@ Beginner-friendly web chat example with streaming responses from GonkaGate using
 - Streaming assistant responses
 - Simple smoke check (`npm run smoke`)
 - Explicit API error handling for `401`, `402`, `429`, `503`
+- Docker support (`Dockerfile` + `docker-compose.yml`)
 
 ## Prerequisites
 
@@ -21,6 +22,7 @@ Beginner-friendly web chat example with streaming responses from GonkaGate using
 - npm (comes with Node.js installer)
 - GonkaGate API key
 - Terminal (PowerShell on Windows, Terminal on macOS, shell on Linux)
+- Docker (optional, for containerized run)
 
 Install Node.js and npm:
 
@@ -142,6 +144,36 @@ Run production server (after build):
 ```bash
 npm run start
 ```
+
+## Docker
+
+Build image locally:
+
+```bash
+docker build -t gonkagate/nextjs-vercel-ai-sdk-chat:local .
+```
+
+Run container:
+
+```bash
+docker run --rm -p 3000:3000 --env-file .env gonkagate/nextjs-vercel-ai-sdk-chat:local
+```
+
+Run with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Pull published image from Docker Hub:
+
+```bash
+docker pull gonkagate/nextjs-vercel-ai-sdk-chat:latest
+docker run --rm -p 3000:3000 --env-file .env gonkagate/nextjs-vercel-ai-sdk-chat:latest
+```
+
+Release tags are published as semantic versions (for example `0.1.0`), floating major tags (for example `0`, `1`, `2`), and `latest`.
+CI publish trigger tag format: `nextjs-vX.Y.Z`.
 
 ## Expected Output
 

@@ -18,12 +18,14 @@ Binary name: `gonkagate-chat`
 - Optional transcript save to JSON
 - Uses `GONKAGATE_API_KEY` for authentication.
 - Explicit handling for `401`, `402`, `429`, `503`
+- Docker support (`Dockerfile` + `docker-compose.yml`)
 
 ## Prerequisites
 
 - Go 1.22 or newer
 - GonkaGate API key
 - A terminal (PowerShell on Windows, Terminal on macOS, shell on Linux)
+- Docker (optional, for containerized run)
 
 Install Go:
 
@@ -162,6 +164,43 @@ Auto-save history on exit:
 ```bash
 ./gonkagate-chat chat --save ./transcripts/session.json
 ```
+
+## Docker
+
+Build image locally:
+
+```bash
+docker build -t gonkagate/gonkagate-chat-cli:local .
+```
+
+Smoke check in container:
+
+```bash
+docker run --rm --env-file .env gonkagate/gonkagate-chat-cli:local chat --smoke
+```
+
+Interactive chat in container:
+
+```bash
+docker run -it --rm --env-file .env gonkagate/gonkagate-chat-cli:local
+```
+
+Run with Docker Compose:
+
+```bash
+docker compose run --rm cli chat --smoke
+docker compose run --rm cli
+```
+
+Pull published image from Docker Hub:
+
+```bash
+docker pull gonkagate/gonkagate-chat-cli:latest
+docker run -it --rm --env-file .env gonkagate/gonkagate-chat-cli:latest
+```
+
+Release tags are published as semantic versions (for example `0.1.0`), floating major tags (for example `0`, `1`, `2`), and `latest`.
+CI publish trigger tag format: `cli-vX.Y.Z`.
 
 ## Slash Commands
 
