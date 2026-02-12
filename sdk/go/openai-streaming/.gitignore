@@ -1,0 +1,5 @@
+.env
+openai-streaming
+gonkagate-openai-streaming-example
+*.exe
+*.out

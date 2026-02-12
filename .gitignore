@@ -1,0 +1,53 @@
+# Environment files
+.env
+.env.*
+*.env
+!.env.example
+!**/.env.example
+
+# Node / frontend artifacts
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Python artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# Java / Maven artifacts
+target/
+build/
+
+# .NET artifacts
+bin/
+obj/
+
+# Go artifacts
+*.test
+coverage.out
+examples/gonkagate-chat-cli/gonkagate-chat
+examples/gonkagate-chat-cli/gonkagate-chat.exe
+
+# Common logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.iml

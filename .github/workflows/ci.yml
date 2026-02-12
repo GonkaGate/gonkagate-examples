@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  repo-guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate repository structure
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          fail_count=0
+          allowed_sdk_langs=(csharp curl go java node python)
+
+          fail() {
+            echo "::error::$1"
+            fail_count=$((fail_count + 1))
+          }
+
+          is_kebab_case() {
+            [[ "$1" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]
+          }
+
+          has_allowed_lang() {
+            local lang="$1"
+            for allowed in "${allowed_sdk_langs[@]}"; do
+              if [[ "$allowed" == "$lang" ]]; then
+                return 0
+              fi
+            done
+            return 1
+          }
+
+          check_example_contract() {
+            local dir="$1"
+            [[ -f "$dir/README.md" ]] || fail "$dir is missing README.md"
+            [[ -f "$dir/.env.example" ]] || fail "$dir is missing .env.example"
+          }
+
+          for lang_dir in sdk/*; do
+            [[ -d "$lang_dir" ]] || continue
+            lang="$(basename "$lang_dir")"
+
+            if ! has_allowed_lang "$lang"; then
+              fail "sdk language folder '$lang' is not allowed"
+            fi
+
+            for example_dir in "$lang_dir"/*; do
+              [[ -d "$example_dir" ]] || continue
+              example_name="$(basename "$example_dir")"
+
+              if ! is_kebab_case "$example_name"; then
+                fail "sdk example folder '$example_dir' must be kebab-case"
+              fi
+
+              check_example_contract "$example_dir"
+            done
+          done
+
+          for top_example_dir in examples/*; do
+            [[ -d "$top_example_dir" ]] || continue
+            top_name="$(basename "$top_example_dir")"
+
+            if [[ "$top_name" == "agents" ]]; then
+              for agent_example_dir in "$top_example_dir"/*; do
+                [[ -d "$agent_example_dir" ]] || continue
+                agent_name="$(basename "$agent_example_dir")"
+
+                if ! is_kebab_case "$agent_name"; then
+                  fail "agent example folder '$agent_example_dir' must be kebab-case"
+                fi
+
+                check_example_contract "$agent_example_dir"
+              done
+            else
+              if ! is_kebab_case "$top_name"; then
+                fail "example folder '$top_example_dir' must be kebab-case"
+              fi
+
+              check_example_contract "$top_example_dir"
+            fi
+          done
+
+          if [[ "$fail_count" -ne 0 ]]; then
+            echo "Validation failed with $fail_count issue(s)."
+            exit 1
+          fi
+
+          echo "Repository structure validation passed."
+
