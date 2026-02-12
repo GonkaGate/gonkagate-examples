@@ -65,7 +65,7 @@ target_paths() {
     nextjs)
       cat <<'EOF'
 examples/nextjs-vercel-ai-sdk-chat
-dockerhub/nextjs-vercel-ai-sdk-chat.md
+examples/dockerhub/nextjs-vercel-ai-sdk-chat.md
 .github/workflows/docker-publish.yml
 .github/workflows/docker-auto-tag.yml
 .github/scripts/auto-tag.sh
@@ -74,7 +74,7 @@ EOF
     cli)
       cat <<'EOF'
 examples/gonkagate-chat-cli
-dockerhub/gonkagate-chat-cli.md
+examples/dockerhub/gonkagate-chat-cli.md
 .github/workflows/docker-publish.yml
 .github/workflows/docker-auto-tag.yml
 .github/scripts/auto-tag.sh

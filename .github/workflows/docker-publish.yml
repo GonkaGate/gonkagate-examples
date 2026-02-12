@@ -143,7 +143,7 @@ jobs:
           password: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN }}
           repository: ${{ env.NEXTJS_IMAGE }}
           short-description: Next.js Vercel AI SDK chat Docker image for GonkaGate OpenAI-compatible API.
-          readme-filepath: ./dockerhub/nextjs-vercel-ai-sdk-chat.md
+          readme-filepath: ./examples/dockerhub/nextjs-vercel-ai-sdk-chat.md
 
       - name: Warn if Docker Hub overview update failed
         if: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN != '' && steps.update_nextjs_overview.outcome == 'failure' }}
@@ -262,7 +262,7 @@ jobs:
           password: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN }}
           repository: ${{ env.CLI_IMAGE }}
           short-description: Go chat CLI Docker image for GonkaGate OpenAI-compatible API with streaming.
-          readme-filepath: ./dockerhub/gonkagate-chat-cli.md
+          readme-filepath: ./examples/dockerhub/gonkagate-chat-cli.md
 
       - name: Warn if Docker Hub overview update failed
         if: ${{ env.DOCKERHUB_DESCRIPTION_TOKEN != '' && steps.update_cli_overview.outcome == 'failure' }}

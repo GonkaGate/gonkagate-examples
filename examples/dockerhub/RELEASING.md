@@ -56,7 +56,7 @@ When `nextjs-vX.Y.Z` or `cli-vX.Y.Z` is pushed, Docker images are published with
 - `latest` (only for stable `X.Y.Z` versions)
 
 Docker Hub overview behavior:
-- if `DOCKERHUB_DESCRIPTION_TOKEN` is set, workflow updates Docker Hub README/overview from `dockerhub/*.md`;
+- if `DOCKERHUB_DESCRIPTION_TOKEN` is set, workflow updates Docker Hub README/overview from `examples/dockerhub/*.md`;
 - if `DOCKERHUB_DESCRIPTION_TOKEN` is missing, publish continues and overview update is skipped.
 
 ## 5. Manual Dry Run
