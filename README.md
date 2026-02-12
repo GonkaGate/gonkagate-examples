@@ -25,10 +25,8 @@ GonkaGate is an OpenAI-compatible API gateway to Gonka Network with USD billing.
 /
   README.md
   AGENTS.md
-  docs/
-    prd.md
-    repo-structure.md
-    migration-map.md
+  .github/
+    workflows/ci.yml
   sdk/
     <language>/<example-name>/
   examples/
@@ -89,7 +87,6 @@ Each example folder should include:
 
 - SDK index: [sdk/README.md](sdk/README.md)
 - Examples index: [examples/README.md](examples/README.md)
-- Repository structure rules: [docs/repo-structure.md](docs/repo-structure.md)
 - Contributing guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Support: [SUPPORT.md](SUPPORT.md)
 - Security policy: [SECURITY.md](SECURITY.md)
