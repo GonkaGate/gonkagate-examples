@@ -127,18 +127,6 @@ jobs:
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3
-
-      - name: Keyless Sign Image Digest
-        run: cosign sign --yes "${{ env.NEXTJS_IMAGE }}@${{ steps.build.outputs.digest }}"
-
-      - name: Verify Signature Identity
-        run: |
-          cosign verify "${{ env.NEXTJS_IMAGE }}@${{ steps.build.outputs.digest }}" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/docker-publish.yml@${{ github.ref }}"
-
       - name: Update Docker Hub Overview
         id: update_nextjs_overview
         continue-on-error: true
@@ -245,18 +233,6 @@ jobs:
           subject-name: index.docker.io/${{ env.CLI_IMAGE }}
           subject-digest: ${{ steps.build.outputs.digest }}
           push-to-registry: true
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3
-
-      - name: Keyless Sign Image Digest
-        run: cosign sign --yes "${{ env.CLI_IMAGE }}@${{ steps.build.outputs.digest }}"
-
-      - name: Verify Signature Identity
-        run: |
-          cosign verify "${{ env.CLI_IMAGE }}@${{ steps.build.outputs.digest }}" \
-            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-            --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/docker-publish.yml@${{ github.ref }}"
 
       - name: Update Docker Hub Overview
         id: update_cli_overview
