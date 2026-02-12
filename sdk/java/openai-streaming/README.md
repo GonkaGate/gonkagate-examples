@@ -7,6 +7,7 @@ Minimal runnable Java example that streams `chat.completions` tokens from GonkaG
 - Validate token streaming in Java projects.
 - Confirm OpenAI-compatible configuration for real-time outputs.
 - Reuse this flow for server-side streaming endpoints.
+- Keep production-friendly structure with small focused classes (config, CLI args, streaming runner, error handler).
 
 ## Prerequisites
 

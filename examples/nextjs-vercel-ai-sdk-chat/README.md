@@ -1,44 +1,135 @@
-# GonkaGate Next.js Vercel AI SDK Chat Example (Streaming)
+# GonkaGate Web Chat (Next.js + Vercel AI SDK)
 
-Minimal runnable Next.js 16 chat UI example using Vercel AI SDK with GonkaGate OpenAI-compatible API.
+Beginner-friendly web chat example with streaming responses from GonkaGate using a Next.js app and the Vercel AI SDK.
 
 ## Why this example
 
-- Validate real-time token streaming in a web UI.
-- Demonstrate server-side API key handling in Next.js.
-- Provide a production-style chat baseline for web products.
+- Lets you run a real chat UI locally in a few minutes.
+- Shows how to keep your API key on the server side (`app/api/chat/route.ts`).
+- Demonstrates token-by-token streaming in the browser.
+
+## Features
+
+- Minimal chat UI (input, send button, message list)
+- Streaming assistant responses
+- Simple smoke check (`npm run smoke`)
+- Explicit API error handling for `401`, `402`, `429`, `503`
 
 ## Prerequisites
 
-- Node.js 20.9+
-- npm
+- Node.js `20.9+`
+- npm (comes with Node.js installer)
 - GonkaGate API key
+- Terminal (PowerShell on Windows, Terminal on macOS, shell on Linux)
 
-## Quick Start
+Install Node.js and npm:
+
+- Node.js download page: https://nodejs.org/en/download
+- npm installation guide: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+
+After installation, verify:
 
 ```bash
-cd examples/nextjs-vercel-ai-sdk-chat
+node -v
+npm -v
+```
+
+You should see Node version `v20.9.0` or newer.
+
+## Quick Start (For Beginners)
+
+### Step 1. Open terminal and go to this example folder
+
+If you already cloned the repo:
+
+```bash
+cd gonkagate-examples/examples/nextjs-vercel-ai-sdk-chat
+```
+
+### Step 2. Install dependencies
+
+```bash
 npm install
+```
+
+### Step 3. Create `.env` from template
+
+macOS/Linux:
+
+```bash
 cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### Step 4. Put your key and model into `.env`
+
+Open `.env` in any text editor and set:
+
+- `GONKAGATE_API_KEY=...`
+- `GONKAGATE_MODEL=...`
+
+Optional fallbacks (OpenAI-compatible naming) are also supported:
+
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+
+Base URL is fixed to `https://api.gonkagate.com/v1`.
+
+### Step 5. Run smoke check (no chat request yet)
+
+```bash
 npm run smoke
 ```
 
-## Environment Variables
+Expected result includes:
 
-Set in `.env`:
+```text
+tsc --noEmit
+```
 
-- `GONKAGATE_API_KEY` (required)
-- `GONKAGATE_MODEL` (required)
-
-## Run
-
-Start local app:
+### Step 6. Start local app
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` and send a message.
+Open `http://localhost:3000`.
+
+### Step 7. Send your first message
+
+Type a prompt in the chat input and click **Send**.
+You should see the assistant response streaming gradually.
+
+## Environment Variables
+
+In `.env`:
+
+- `GONKAGATE_API_KEY` (required, unless `OPENAI_API_KEY` is set)
+- `GONKAGATE_MODEL` (required, unless `OPENAI_MODEL` is set)
+
+Notes:
+
+- `GONKAGATE_BASE_URL` and `OPENAI_BASE_URL` are ignored in this example.
+- The API base URL is always `https://api.gonkagate.com/v1`.
+
+## Run
+
+Development server:
+
+```bash
+npm run dev
+```
+
+Type check:
+
+```bash
+npm run smoke
+```
 
 Production build check:
 
@@ -46,28 +137,45 @@ Production build check:
 npm run build
 ```
 
+Run production server (after build):
+
+```bash
+npm run start
+```
+
 ## Expected Output
 
-Smoke:
+Smoke check:
 
 ```text
+> vercel-ai-sdk-chat@0.1.0 smoke
+> npm run typecheck
+...
 > tsc --noEmit
 ```
 
 UI behavior:
 
-- chat input and send button are visible
-- user message appears immediately
-- assistant response streams token by token
+- Chat input and send button are visible
+- Your message appears immediately
+- Assistant response streams token by token
 
 ## Troubleshooting
 
-The server route (`app/api/chat/route.ts`) returns clear messages for:
-
-- `401`: invalid key
-- `402`: billing or balance issue
-- `429`: rate limit
-- `503`: temporary service issue
+- `node: command not found` or `npm: command not found`
+  - Node.js/npm are not installed or not in PATH. Install from https://nodejs.org/en/download and reopen terminal.
+- `Missing API key: set GONKAGATE_API_KEY...`
+  - Add `GONKAGATE_API_KEY` (or `OPENAI_API_KEY`) to `.env`.
+- `Missing model: set GONKAGATE_MODEL...`
+  - Add `GONKAGATE_MODEL` (or `OPENAI_MODEL`) to `.env`.
+- `401`
+  - Invalid API key.
+- `402`
+  - Billing or balance issue.
+- `429`
+  - Rate limit exceeded. Retry later.
+- `503`
+  - Temporary upstream issue. Retry later.
 
 ## Learn More
 

@@ -7,6 +7,7 @@ Minimal runnable C# example that streams `chat.completions` tokens from GonkaGat
 - Validate token streaming behavior in .NET.
 - Confirm OpenAI-compatible endpoint setup with minimal code.
 - Reuse streaming flow for chat APIs and assistants.
+- Keep production-friendly structure with small focused classes (config, CLI args, streaming service, error handler).
 
 ## Prerequisites
 
