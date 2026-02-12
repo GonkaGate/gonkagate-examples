@@ -19,6 +19,18 @@ docker run -it --rm \
   gonkagate/gonkagate-chat-cli:latest
 ```
 
+### Pull and Run with `-e`
+
+```bash
+docker pull gonkagate/gonkagate-chat-cli:latest
+docker run -it --rm \
+  -e GONKAGATE_API_KEY=your_api_key \
+  -e GONKAGATE_MODEL=your_model \
+  gonkagate/gonkagate-chat-cli:latest
+```
+
+Configuration for this image is passed via environment variables (`-e`), not CLI flags.
+
 Smoke check:
 
 ```bash
