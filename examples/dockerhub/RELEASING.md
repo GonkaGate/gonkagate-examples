@@ -33,6 +33,12 @@ On every push to `main`, the workflow inspects changes and creates tags:
 - `nextjs-vX.Y.Z` for Next.js example changes
 - `cli-vX.Y.Z` for CLI example changes
 
+Docs-only changes do not trigger auto-tag for these files:
+- `examples/dockerhub/**`
+- `examples/nextjs-vercel-ai-sdk-chat/README.md`
+- `examples/gonkagate-chat-cli/README.md`
+- `examples/README.md`
+
 Important:
 - If `TAG_PUSH_TOKEN` is set, tags are pushed with that PAT.
 - If `TAG_PUSH_TOKEN` is missing, workflow falls back to `GITHUB_TOKEN` and explicitly dispatches `.github/workflows/docker-publish.yml` for newly created tags.
@@ -56,7 +62,7 @@ When `nextjs-vX.Y.Z` or `cli-vX.Y.Z` is pushed, Docker images are published with
 - `latest` (only for stable `X.Y.Z` versions)
 
 Docker Hub overview behavior:
-- if `DOCKERHUB_DESCRIPTION_TOKEN` is set, workflow updates Docker Hub README/overview from `dockerhub/*.md`;
+- if `DOCKERHUB_DESCRIPTION_TOKEN` is set, workflow updates Docker Hub README/overview from `examples/dockerhub/*.md`;
 - if `DOCKERHUB_DESCRIPTION_TOKEN` is missing, publish continues and overview update is skipped.
 
 ## 5. Manual Dry Run

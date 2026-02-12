@@ -21,6 +21,18 @@ docker run --rm -p 3000:3000 \
 
 Open `http://localhost:3000` and send a message.
 
+### Pull and Run with `-e`
+
+```bash
+docker pull gonkagate/nextjs-vercel-ai-sdk-chat:latest
+docker run --rm -p 3000:3000 \
+  -e GONKAGATE_API_KEY=your_api_key \
+  -e GONKAGATE_MODEL=your_model \
+  gonkagate/nextjs-vercel-ai-sdk-chat:latest
+```
+
+Configuration for this image is passed via environment variables (`-e`), not CLI flags.
+
 ## Tags
 
 - `latest`

@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "examples/dockerhub/**"
+      - "examples/nextjs-vercel-ai-sdk-chat/README.md"
+      - "examples/gonkagate-chat-cli/README.md"
+      - "examples/README.md"
   workflow_dispatch:
     inputs:
       dry_run:
