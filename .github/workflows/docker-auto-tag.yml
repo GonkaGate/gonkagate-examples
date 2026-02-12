@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "examples/nextjs-vercel-ai-sdk-chat/**"
+      - "examples/gonkagate-chat-cli/**"
     paths-ignore:
       - "examples/dockerhub/**"
       - "examples/nextjs-vercel-ai-sdk-chat/README.md"

@@ -66,6 +66,13 @@ There is no single root build/test pipeline yet. Work from the specific example 
 
 If you add a new example, document exact install/run commands in that example's `README.md`.
 
+## Docker Release Automation Guardrails
+- Auto-tag/release triggers must be scoped only to runnable example sources:
+  - `examples/nextjs-vercel-ai-sdk-chat/**`
+  - `examples/gonkagate-chat-cli/**`
+- Do not include `.github/**`, `examples/dockerhub/**`, or README-only documentation paths as release-target changes in `.github/scripts/auto-tag.sh`.
+- Before merging auto-tag logic changes, run `Docker Auto Tag` in `dry_run: true` mode to confirm no unintended tags are created.
+
 ## Coding Style & Naming Conventions
 - Use clear, minimal, copy-paste-friendly code.
 - Use normalized language folder names in `sdk/` (`csharp`, `node`, `python`, `go`, `java`, `curl`).

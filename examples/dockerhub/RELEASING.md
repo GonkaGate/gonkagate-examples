@@ -28,7 +28,11 @@ Create these public repositories in Docker Hub namespace `gonkagate`:
 
 Workflow: `.github/workflows/docker-auto-tag.yml`
 
-On every push to `main`, the workflow inspects changes and creates tags:
+On push to `main`, the workflow runs only when files change in:
+- `examples/nextjs-vercel-ai-sdk-chat/**`
+- `examples/gonkagate-chat-cli/**`
+
+Then it inspects changes and creates tags:
 
 - `nextjs-vX.Y.Z` for Next.js example changes
 - `cli-vX.Y.Z` for CLI example changes
@@ -38,6 +42,8 @@ Docs-only changes do not trigger auto-tag for these files:
 - `examples/nextjs-vercel-ai-sdk-chat/README.md`
 - `examples/gonkagate-chat-cli/README.md`
 - `examples/README.md`
+
+Automation-only changes in `.github/**` also do not trigger auto-tag anymore.
 
 Important:
 - If `TAG_PUSH_TOKEN` is set, tags are pushed with that PAT.

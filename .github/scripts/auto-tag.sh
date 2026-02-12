@@ -66,18 +66,12 @@ target_paths() {
       cat <<'EOF'
 examples/nextjs-vercel-ai-sdk-chat
 :(exclude)examples/nextjs-vercel-ai-sdk-chat/README.md
-.github/workflows/docker-publish.yml
-.github/workflows/docker-auto-tag.yml
-.github/scripts/auto-tag.sh
 EOF
       ;;
     cli)
       cat <<'EOF'
 examples/gonkagate-chat-cli
 :(exclude)examples/gonkagate-chat-cli/README.md
-.github/workflows/docker-publish.yml
-.github/workflows/docker-auto-tag.yml
-.github/scripts/auto-tag.sh
 EOF
       ;;
     *)
